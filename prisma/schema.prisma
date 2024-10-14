@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Gender {
+  Male
+  Female
+}
+
+enum typeUsers {
+  Admin
+  User
+}
+
+enum Category {
+  Action
+  Drama
+  Commedy
+  Romance
+  Fight
+}
+
+enum ContentType {
+  Movie
+  TvSeries
+}
+
+model Users {
+  id        Int       @id @default(autoincrement())
+  fullname  String
+  email     String    @unique
+  password  String
+  gender    Gender
+  typeUsers typeUsers @default(User)
+  phone     String
+  address   String
+  profile   String?
+  active    Boolean   @default(false)
+
+  film Film[] @relation("user")
+}
+
+model Film {
+  id          Int         @id @default(autoincrement())
+  title       String
+  year        Int
+  description String
+  type        ContentType @default(Movie)
+  thumbnail   String
+
+  episode Episode[] @relation(name: "tvSeriesEpisodes")
+
+  user   Users @relation("user", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId Int
+}
+
+model Episode {
+  title_episode     String
+  link_film         String
+  thumbnail_episode String
+
+  film   Film @relation(fields: [filmId], references: [id], name: "tvSeriesEpisodes", onDelete: Cascade, onUpdate: Cascade)
+  filmId Int
+
+  @@id([filmId])
+}
